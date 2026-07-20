@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { box-sizing: border-box; }
+    body { 
+      width: 100%; 
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      background: #202124; 
+      color: #e8eaed; 
+      margin: 0; 
+      padding: 0; 
+    }
+    .header { 
+      padding: 16px; 
+      background: #292a2d; 
+      border-bottom: 1px solid #3c4043; 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+    }
+    .header h2 { 
+      margin: 0; 
+      font-size: 15px; 
+      font-weight: 600; 
+      letter-spacing: 0.5px;
+      color: #fff;
+    }
+    .content { 
+      padding: 16px; 
+    }
+    .tab-pane {
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .tab-pane.active {
+      display: flex;
+    }
+    
+    .nav-tabs {
+      display: flex;
+      border-bottom: 1px solid #3c4043;
+      background: #292a2d;
+    }
+    .nav-btn {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #9aa0a6;
+      padding: 12px;
+      font-size: 13px;
+      font-weight: bold;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    .nav-btn:hover { color: #e8eaed; background: #35363a; }
+    .nav-btn.active {
+      color: #8ab4f8;
+      border-bottom: 2px solid #8ab4f8;
+      background: #35363a;
+    }
+    
+    .dl-input {
+      width: 100%;
+      background: #202124;
+      border: 1px solid #5f6368;
+      color: white;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      font-size: 13px;
+    }
+    .dl-input:focus { border-color: #8ab4f8; outline: none; }
+    
+    .dl-select {
+      background: #202124;
+      border: 1px solid #5f6368;
+      color: white;
+      padding: 8px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      width: 100%;
+    }
+    .dl-textarea {
+      width: 100%;
+      background: #202124;
+      border: 1px solid #5f6368;
+      color: white;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: 'Segoe UI', monospace;
+      resize: vertical;
+      line-height: 1.5;
+    }
+    .dl-textarea:focus { border-color: #8ab4f8; outline: none; }
+    .dl-checkbox-label {
+      font-size: 12px;
+      color: #9aa0a6;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dl-queue-item {
+      background: #202124;
+      border: 1px solid #3c4043;
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+    .dl-queue-item .item-title {
+      font-size: 11px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: #e8eaed;
+      margin-bottom: 4px;
+    }
+    .dl-queue-item .item-bar-bg {
+      background: #3c4043;
+      height: 4px;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .dl-queue-item .item-bar {
+      background: #81c995;
+      height: 100%;
+      width: 0%;
+      transition: width 0.3s;
+    }
+    .dl-queue-item .item-bar.error { background: #f28b82; }
+    .dl-queue-item .item-meta {
+      font-size: 10px;
+      color: #9aa0a6;
+      margin-top: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .item-status-badge {
+      font-size: 10px;
+      padding: 1px 6px;
+      border-radius: 10px;
+      font-weight: bold;
+    }
+    .status-waiting { background: #3c4043; color: #9aa0a6; }
+    .status-downloading { background: #1a3d5c; color: #8ab4f8; }
+    .status-done { background: #1a3d2a; color: #81c995; }
+    .status-error { background: #3d1a1a; color: #f28b82; }
+    .stat-box { 
+      background: #292a2d; 
+      border-radius: 8px; 
+      padding: 12px; 
+      border: 1px solid #3c4043; 
+    }
+    .stat-row { 
+      display: flex; 
+      justify-content: space-between; 
+      margin-bottom: 8px; 
+      font-size: 13px; 
+      align-items: center;
+    }
+    .stat-row:last-child { margin-bottom: 0; }
+    .stat-val { font-weight: bold; color: #8ab4f8; }
+    
+    .progress-bg { 
+      background: #3c4043; 
+      height: 6px; 
+      border-radius: 3px; 
+      overflow: hidden; 
+      margin-top: 8px;
+    }
+    .progress-bar { 
+      background: #8ab4f8; 
+      height: 100%; 
+      width: 0%; 
+      transition: width 0.3s ease; 
+    }
+    .progress-bar.high { background: #f28b82; }
+    .progress-bar.medium { background: #fde293; }
+    
+    .btn { 
+      background: #8ab4f8; 
+      color: #202124; 
+      border: none; 
+      padding: 10px 12px; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      font-weight: 600; 
+      width: 100%; 
+      font-size: 13px;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn:hover { background: #93bbf9; }
+    .btn:active { transform: scale(0.98); }
+    
+    .btn-save { background: #81c995; color: #000; margin-top: 8px; }
+    .btn-save:hover { background: #a8dab5; }
+    
+    .btn-danger { background: #3c4043; color: #f28b82; border: 1px solid #f28b82; }
+    .btn-danger:hover { background: #f28b82; color: #202124; }
+    
+    .input-limit {
+      background: #202124;
+      border: 1px solid #5f6368;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      width: 60px;
+      text-align: right;
+    }
+    
+    .tab-list {
+      max-height: 400px;
+      overflow-y: auto;
+      font-size: 13px;
+      margin-top: 8px;
+      padding-right: 4px;
+    }
+    .tab-list::-webkit-scrollbar { width: 6px; }
+    .tab-list::-webkit-scrollbar-thumb { background: #5f6368; border-radius: 3px; }
+    .tab-list::-webkit-scrollbar-track { background: transparent; }
+    
+    .tab-item {
+      display: flex;
+      flex-direction: column;
+      padding: 8px 10px;
+      margin-bottom: 6px;
+      border-radius: 7px;
+      background: #202124;
+      border: 1px solid #3c4043;
+      border-left: 4px solid #5f6368;
+      transition: background 0.2s;
+    }
+    .tab-item.active-tab { border-left-color: #81c995; }
+    .tab-item.idle-tab { border-left-color: #fde293; }
+    .tab-item.sleep-tab { border-left-color: #9aa0a6; opacity: 0.8; }
+    
+    .tab-item:hover { background: #35363a; }
+    
+    .tab-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    
+    .tab-title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 220px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .tab-favicon { width: 14px; height: 14px; }
+    
+    .tab-stats {
+      font-size: 11px;
+      color: #9aa0a6;
+      display: flex;
+      gap: 12px;
+    }
+    
+    .stat-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #3c4043;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    
+    .tab-group-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 10px;
+      margin: 12px 0 6px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    
+    .alert-text { color: #f28b82; font-size: 11px; margin-top: 4px; display: none; }
+    
+    /* Switch / Toggle */
+    .switch { position: relative; display: inline-block; width: 34px; height: 18px; margin-left: 8px;}
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #3c4043; transition: .4s; border-radius: 18px; }
+    .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: #8ab4f8; }
+    input:checked + .slider:before { transform: translateX(16px); }
+
+    .whitelist-container {
+      max-height: 120px;
+      overflow-y: auto;
+      background: #202124;
+      border: 1px solid #3c4043;
+      border-radius: 6px;
+      padding: 6px;
+      margin-top: 8px;
+    }
+    .whitelist-container::-webkit-scrollbar { width: 6px; }
+    .whitelist-container::-webkit-scrollbar-thumb { background: #5f6368; border-radius: 3px; }
+    
+    .whitelist-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      padding: 4px;
+      border-bottom: 1px solid #3c4043;
+    }
+    .whitelist-item:last-child { border-bottom: none; }
+    
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #81c995;
+      color: #000;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: bold;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      z-index: 1000;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 11px;
+      color: #9aa0a6;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="nav-tabs">
+    <button class="nav-btn active" id="tab-btn-performance">🚀 Performance</button>
+    <button class="nav-btn" id="tab-btn-downloader">📥 Downloader</button>
+  </div>
+  
+  <div class="content">
+    
+    <!-- PANE PERFORMANCE -->
+    <div id="pane-performance" class="tab-pane active">
+      <!-- SYSTEM STATS -->
+    <div class="stat-box">
+      <div class="stat-row">
+        <span>Penggunaan CPU</span>
+        <span class="stat-val" id="cpu-val">--%</span>
+      </div>
+      <div class="progress-bg"><div class="progress-bar" id="cpu-bar"></div></div>
+      
+      <div class="stat-row" style="margin-top: 12px;">
+        <span>Memori (RAM) Sistem</span>
+        <span class="stat-val" id="ram-val">-- / -- GB</span>
+      </div>
+      <div class="progress-bg"><div class="progress-bar" id="ram-bar"></div></div>
+      
+      <div class="stat-row" style="margin-top: 16px;">
+        <span>Batas Peringatan RAM (GB)</span>
+        <input type="number" id="ram-limit" class="input-limit" value="14" min="1" max="64">
+      </div>
+      <div class="stat-row" style="margin-top: 8px;">
+        <span>Waktu Auto-Sleep (Menit)</span>
+        <input type="number" id="idle-timer" class="input-limit" value="60" min="1" max="1440">
+      </div>
+      <div id="ram-alert" class="alert-text">⚠️ RAM Overload! Rekomendasi: Segera tidurkan tab boros RAM.</div>
+      
+      <button class="btn btn-save" id="btn-save-general">💾 Simpan Pengaturan</button>
+    </div>
+
+    <!-- TAB LIST -->
+    <div class="stat-box" id="recommendation-box">
+      <div class="stat-row">
+        <span style="color: #fde293;">💡 Daftar Tab</span>
+        <span style="font-size: 10px; color:#9aa0a6;">Urut: Aktif > Idle > Tidur</span>
+      </div>
+      <div class="tab-list" id="tab-recommendations">Memuat data...</div>
+    </div>
+    
+    <!-- TAB SUMMARY -->
+    <div class="stat-box">
+      <div class="stat-row">
+        <span>Tab Sedang Aktif</span>
+        <span class="stat-val" style="color: #81c995;" id="active-tabs">0</span>
+      </div>
+      <div class="stat-row" style="margin-top: 8px;">
+        <span>Tab Tertidur 🌙</span>
+        <span class="stat-val" style="color: #9aa0a6;" id="sleeping-tabs">0</span>
+      </div>
+      <div style="font-size: 10px; color: #9aa0a6; margin-top: 8px; line-height: 1.4;">
+        * Info: Tab WhatsApp (wa) atau tab yang disematkan (pin) / memutar suara tidak akan ditidurkan secara otomatis untuk mencegah kehilangan data.
+      </div>
+    </div>
+    
+    <!-- ANTI REDIRECT -->
+    <div class="stat-box">
+      <div class="stat-row">
+        <span style="color: #8ab4f8; font-weight: bold;">🛡️ Anti-Redirect & Pop-up</span>
+        <label class="switch">
+          <input type="checkbox" id="redirect-toggle" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div style="font-size: 11px; color: #9aa0a6; margin-top: 4px;">
+        Pilih tab (domain) yang diizinkan melakukan redirect:
+      </div>
+      <div class="whitelist-container" id="whitelist-tabs-container">
+        <!-- Checkboxes for domains generated here -->
+        <div style="color:#9aa0a6; font-size:11px; text-align:center; padding: 4px;">Memuat tab aktif...</div>
+      </div>
+      <button class="btn btn-save" id="btn-save-redirect">💾 Simpan Whitelist</button>
+    </div>
+
+    <!-- AUTO FLUSH -->
+    <div class="stat-box">
+      <div class="stat-row">
+        <span style="color: #f28b82; font-weight: bold;">🧹 Auto-Flush (Idle Cleaner)</span>
+        <label class="switch">
+          <input type="checkbox" id="idle-flush-toggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="stat-row" style="margin-top: 8px;">
+        <span>Waktu Idle (Menit)</span>
+        <input type="number" id="idle-flush-mins" class="input-limit" value="15" min="1">
+      </div>
+      <div style="font-size: 10px; color: #9aa0a6; margin-top: 4px;">Membersihkan cache & sampah saat Anda tidak menggerakkan mouse.</div>
+      <button class="btn btn-save" id="btn-save-flush">💾 Simpan Pengaturan Flush</button>
+    </div>
+
+      <button class="btn" id="btn-sleep-all">Tidurkan Semua Tab Pasif</button>
+      <button class="btn btn-danger" id="btn-clear-cache">🧹 Bersihkan Cache Browser</button>
+      
+      <div class="footer">CHROME PERFORMANCE v4.0</div>
+    </div>
+
+    <!-- PANE DOWNLOADER -->
+    <div id="pane-downloader" class="tab-pane">
+      
+      <!-- URL Input Box -->
+      <div class="stat-box">
+        <div style="font-size: 14px; font-weight: bold; margin-bottom: 6px; color: #8ab4f8;">📥 Video &amp; Audio Downloader</div>
+        <button class="btn" id="btn-dl-fast" style="background:#8ab4f8; color:#000; font-size:13px; margin-bottom: 12px; font-weight:bold;">⚡ Download Langsung (Tab Aktif)</button>
+        
+        <div style="font-size: 11px; color: #9aa0a6; margin-bottom: 6px; border-top: 1px solid #3c4043; padding-top: 12px;">Atau paste URL manual (Bulk: 1 URL per baris)</div>
+        <textarea id="dl-urls" class="dl-textarea" placeholder="Paste 1 atau lebih link video di sini..."
+          rows="3" spellcheck="false"></textarea>
+        
+        <div style="display:flex; gap:8px; margin-top: 8px;">
+          <div style="flex:1;">
+            <label style="font-size:11px; color:#9aa0a6;">Format</label>
+            <select id="dl-format" class="dl-select" style="margin-top:4px; margin-bottom:0;">
+              <option value="mp4">🎬 MP4 (Video)</option>
+              <option value="mp3">🎵 MP3 (Audio)</option>
+              <option value="m4a">🎵 M4A (Audio)</option>
+              <option value="webm">📹 WebM</option>
+              <option value="mkv">📹 MKV</option>
+            </select>
+          </div>
+          <div style="flex:1;">
+            <label style="font-size:11px; color:#9aa0a6;">Kualitas</label>
+            <select id="dl-quality" class="dl-select" style="margin-top:4px; margin-bottom:0;">
+              <option value="best">⭐ Tertinggi (Auto)</option>
+              <option value="2160p">4K (2160p)</option>
+              <option value="1440p">2K (1440p)</option>
+              <option value="1080p">Full HD (1080p)</option>
+              <option value="720p">HD (720p)</option>
+              <option value="480p">SD (480p)</option>
+              <option value="360p">360p</option>
+            </select>
+          </div>
+        </div>
+        
+        <div style="display:flex; gap:8px; margin-top: 12px; align-items: center;">
+          <label class="dl-checkbox-label">
+            <input type="checkbox" id="dl-playlist"> Download Playlist/Album
+          </label>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top: 12px;">
+          <button class="btn" id="btn-download" style="background:#81c995; color:#000; flex:1;">⬇️ Download URL di Atas</button>
+        </div>
+      </div>
+      
+      <!-- Output Folder Setting -->
+      <div class="stat-box">
+        <div class="stat-row" style="margin-bottom: 8px;">
+          <span>📁 Folder Unduhan:</span>
+          <span id="dl-folder-text" style="font-size:11px; color:#8ab4f8; max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; direction: rtl; text-align: left;">Default</span>
+        </div>
+        <button class="btn" id="btn-browse-folder" style="width:100%; background:#3c4043; border: 1px solid #8ab4f8; color:#8ab4f8; padding: 6px; font-weight: bold;">Pilih Folder Baru...</button>
+        <input type="hidden" id="dl-folder" value="">
+      </div>
+
+      <!-- Queue Status -->
+      <div class="stat-box" id="dl-queue-box" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:13px; font-weight:bold; color:#fde293;">📋 Antrian Download</span>
+          <button id="btn-cancel-queue" class="btn" style="width:auto; padding:4px 10px; font-size:11px; background:#3c4043; color:#f28b82; border:1px solid #f28b82;">✕ Batalkan</button>
+        </div>
+        <div id="dl-queue-list" style="display:flex; flex-direction:column; gap:8px; max-height:300px; overflow-y:auto;"></div>
+        <div id="dl-queue-summary" style="margin-top:8px; font-size:11px; color:#9aa0a6; text-align:center;"></div>
+      </div>
+
+      <!-- History Button -->
+      <button class="btn" id="btn-toggle-history" style="background:#3c4043; color:#fff; border: 1px solid #5f6368; margin-top:4px;">📜 Riwayat Unduhan</button>
+
+      <!-- History Panel -->
+      <div class="stat-box" id="dl-history-box" style="display:none; margin-top:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <span style="font-size:13px; font-weight:bold; color:#8ab4f8;">Riwayat (Selesai)</span>
+          <button id="btn-clear-history" class="btn" style="width:auto; padding:4px 10px; font-size:11px; background:#3c4043; color:#f28b82; border:1px solid #f28b82;">🧹 Bersihkan</button>
+        </div>
+        <div id="dl-history-list" style="display:flex; flex-direction:column; gap:8px; max-height:200px; overflow-y:auto;">
+          <div style="font-size:11px; color:#9aa0a6; text-align:center;">Riwayat kosong.</div>
+        </div>
+      </div>
+      
+      <!-- Info note -->
+      <div class="stat-box">
+        <div style="font-size: 11px; color: #9aa0a6; line-height: 1.5; margin-bottom: 8px;">
+          <span style="color:#e8eaed; font-weight:bold;">ℹ️ Info:</span> Download berjalan lokal via <b>yt-dlp</b>. Jika Folder dikosongkan, default ke <b>Downloads\ChromeDownloads</b>.
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button class="btn" id="btn-update-engine" style="flex:1; background:#202124; color:#8ab4f8; border:1px solid #3c4043; padding:6px; font-size:11px;">🔄 Update Engine</button>
+          <button class="btn" id="btn-install-ffmpeg" style="flex:1; background:#202124; color:#fde293; border:1px solid #3c4043; padding:6px; font-size:11px;">📦 Install FFmpeg</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Tersimpan! ✅</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
